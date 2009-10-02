@@ -1,0 +1,157 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + initialize classpaths
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq swank-clojure-extra-classpaths
+     (list "c:/usr/home/.emacs.d/plugins/hsqldb/src" "c:/usr/home/.emacs.d/plugins/hsqldb/lib/hsqldb.jar"))
+  (add-to-list 'swank-clojure-extra-classpaths
+     "c:/usr/home/.emacs.d/plugins/hsqldb/src")
+  (add-to-list 'swank-clojure-extra-classpaths "c:/usr/home/clojure_files")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + longlines -- wrap long lines at window's edge
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;(autoload 'longlines-mode "longlines.el" "Minor mode for editing long lines." t)
+;(add-hook 'text-mode-hook 'longlines-mode)
+;(setq longlines-wrap-follows-window-size t)
+
+(defun llt ()
+   (interactive)
+   "Toggle longlines mode on"
+   (longlines-mode 1))
+
+(defun llf ()
+   (interactive)
+   "Toggle longlines mode on"
+   (longlines-mode -1))
+
+(require 'color-theme)
+    (color-theme-initialize)
+    (color-theme-robin-hood)
+
+; remap alt-m to ctrl-m
+(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-set-key "\C-c\C-m" 'execute-extended-command)
+
+; remap ctrl-w to backward-delete word
+(global-set-key "\C-w" 'backward-kill-word)
+(global-set-key "\C-x\C-k" 'kill-region)
+(global-set-key "\C-c\C-k" 'kill-region)
+;(global-set-key "\C-ml" 'longlines-mode)
+
+; turn off scollbar, toolbar, menubar
+;(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+
+(fset 'yes-or-no-p 'y-or-n-p) ;will allow you to type just "y" instead of "yes" when you exit. 
+
+(setq next-line-add-newlines nil) ;will disallow creation of new lines when you press the "arrow-down key" at end of the buffer.
+
+(require 'paren) (show-paren-mode t) ;will highlight matching parentheses next to cursor.
+
+(setq default-frame-alist (append (list 
+  '(width  . 165)  ; Width set to 100 characters 
+  '(height . 55)) ; Height set to 80 lines 
+  default-frame-alist))
+
+(split-window-horizontally)      ;; want two windows at startup 
+(enlarge-window-horizontally 20) ;; after split, make left side larger
+(setq w (other-window 1))        ;; move to other window
+
+(speedbar)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + yasnippet
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'org-mode-hook
+          #'(lambda ()
+              (setq yas/fallback-behavior
+                    `(apply ,(lookup-key org-mode-map [tab])))
+              (local-set-key [tab] 'yas/expand)))
+
+(add-to-list 'load-path
+                  "~/.emacs.d/plugins/yasnippet-0.6.0c")
+    (require 'yasnippet) ;; not yasnippet-bundle
+    (yas/initialize)
+    (yas/load-directory "~/.emacs.d/plugins/yasnippet-0.6.0c/snippets")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + Org-mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'org-install)
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
+(global-font-lock-mode 1)                     ; for all buffers
+(add-hook 'org-mode-hook 'turn-on-font-lock)  ; Org buffers only
+
+;; Turn longlines off for org-mode b/c it messes things up
+					;(add-hook 'org-mode-hook '(lambda () (longlines-mode -1)))l
+
+(setq org-todo-keyword-faces (quote (
+ ("TODO" :foreground "red" :weight bold)
+ ("OPEN" :foreground "blue" :weight bold)
+ ("INPROGRESS" :foreground "green" :weight bold)
+ ("WAITING" :foreground "yellow" :weight bold)
+ ("RESOLVED" :foreground "orange" :weight bold)
+ ("CLOSED" :foreground "red" :weight bold))))  
+
+;;_ + customize org-mode agenda view
+(global-set-key (kbd "C-c a") 'org-agenda)
+(setq org-agenda-custom-commands
+      '(("a" "My custom agenda"
+	 ((org-agenda-list nil nil 1)
+	  (tags "PROJECT-WAITING")
+	  (tags-todo "WAITING")
+	  (tags-todo "-MAYBE")))))
+
+;;_ + add org-remember
+(org-remember-insinuate)
+(setq org-directory "~/org")
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+(define-key global-map "\C-cr" 'org-remember)
+
+;;_ + example org-remember templates
+;; change to suit once understand concept
+(setq org-remember-templates
+      '((?t "* TODO %?\n  %i\n" "~/org/notes.org" "Inbox")
+	(?b "* BUG %^{ID}\n %^{Title}  :TITLE: \n  %i\n" "~/org/cases.org" "Inbox")
+        (?j "* %U %?\n\n  %i\n" "~/org/journal.org" "Journal Entries")
+        (?i "* %^{Title}\n  %i\n" "~/org/journal.org" "Info")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + ljupdate, blogging with livejournal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path "~/elisp")
+(add-to-list 'load-path "~/elisp/ljupdate")
+(require 'ljupdate)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;_ + muse, easy latex publishing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path "~/.emacs.d/plugins/muse/lisp")
+(require 'muse-mode)     ; load authoring mode
+(require 'muse-html)     ; load publishing styles I use
+(require 'muse-latex)
+(require 'muse-texinfo)
+(require 'muse-docbook)
+(require 'muse-project)  ; publish files in 
+
+
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(lj-compose-init-body-hook nil)
+ '(lj-compose-pre-prepare-body-hook nil)
+ '(lj-default-username "codemangler"))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
